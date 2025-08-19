@@ -20,9 +20,47 @@ let posts = [
 ];
 
 window.onload = function (){
+    carregarPostsLocalStorage()
+    //se tiver posts no localStorage ele carrega, se não mostra o array
     mostarPosts()
 
     document.querySelector("#postForm").addEventListener('submit', criarPost)
+
+    //delega eventos, retorna onde foi clicado
+    document.querySelector('#postList').addEventListener('click', handleClick)
+
+
+    //LocalStorage só armazena string
+    // localStorage.setItem("nome", "Olivanaa")
+    // console.log(localStorage.getItem("nome"));
+    // localStorage.removeItem("nome")
+    // localStorage.clear()
+
+    //para transforma o obejto em string:
+    //JSON.stringfy
+    //de string para objeto:
+    //JSON.parse
+    
+}
+
+function handleClick(infosDoEvento){
+    //retorna o elemento que foi clicado
+    console.log(infosDoEvento.target);
+
+    //guarda o valor da ação e do indice(data-)
+    const acaoBotao = infosDoEvento.target.dataset.action
+    const indicePost = infosDoEvento.target.dataset.index
+
+    if(!acaoBotao) return //aborda e sai da função
+
+    if(acaoBotao === "Editar"){
+        console.log("Editou"); 
+        editarPost(indicePost)       
+    }
+    else if(acaoBotao === "Apagar"){
+        console.log("Apagou");
+        apagarPost(indicePost)
+    }    
 }
 
 
@@ -45,8 +83,12 @@ function criarPost(infosDoEvento) {
         date: dataPost
     }
 
-    //adiciona o post no inicio do array
+    //adiciona o post no inicio do array e salva no localStorage
     posts.unshift(post)
+    salvarLocalStorage()
+
+    //limpa formulário
+    document.querySelector('#postForm').reset()
 
     //atuliza para mostrar novo post
     mostarPosts()
@@ -58,7 +100,7 @@ function mostarPosts() {
     //antes de mostrar, limpa a lista de posts para não duplicar 
     listaPosts.innerHTML = ""
 
-    posts.forEach(pegaItem => {
+    posts.forEach((pegaItem, index) => {
         const cardPost = document.createElement("div")
         cardPost.classList.add("card")
 
@@ -67,18 +109,53 @@ function mostarPosts() {
             <img src='${pegaItem.image}' style='max-width: 150px'/>
             <p>${pegaItem.category}</p>
             <p>${pegaItem.date}</p>
-            <button type="submit"><i class="fa-solid fa-pen-to-square"></i>Editar</button>
-            <button type="submit"><i class="fa-solid fa-eraser"></i>Apagar</button>
+            <button data-action="Editar" data-index=${index} type="submit"><i class="fa-solid fa-pen-to-square"></i>Editar</button>
+            <button data-action="Apagar" data-index=${index} type="submit"><i class="fa-solid fa-eraser"></i>Apagar</button>
         `
         listaPosts.append(cardPost)
     })
 }
+
 //UPDATE
+function editarPost(indicePost){
+    const novoTexto = prompt("Edite o conteudo do seu post", posts[indicePost].text)
+    posts[indicePost].text = novoTexto
+    
+    salvarLocalStorage()
+    mostarPosts()
+}
+
 //DELETE
+function apagarPost(indicePost) {
+
+    const confirmar = confirm("Deseja realmente excluir este post?")
+
+    if(confirmar){            
+        posts.splice(indicePost, 1)    
+
+        salvarLocalStorage()
+
+        mostarPosts()
+    }
+
+}
+
+function salvarLocalStorage(){
+    localStorage.setItem("posts", JSON.stringify(posts))
+}
+
+function carregarPostsLocalStorage(){
+    postsGuardados = localStorage.getItem("posts")
+
+    if(postsGuardados){
+        //coloca os postsGuardados no array posts
+        posts = JSON.parse(postsGuardados)
+    }
+}
 
 
 // acessar objeto 
-console.log(posts.text);
-console.log(posts[text]);
+// console.log(posts.text);
+// console.log(posts[text]);
 
 //hosting - pode chamar a função antes de declara-la, não funciona com arrow function
